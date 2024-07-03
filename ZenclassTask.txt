@@ -1,0 +1,230 @@
+// 1. Find all the topics and tasks which are thought in the month of October
+
+db.tasks.aggregate([
+    {
+      $match: {
+        deadline: {
+          $gte: ISODate("2020-10-01"),
+          $lte: ISODate("2020-10-31"),
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "topics",
+        localField: "topic_id",
+        foreignField: "topic_id",
+        as: "topic",
+      },
+    },
+    {
+      $unwind: "$topic",
+    },
+    {
+      $project: {
+        _id: 0,
+        task_name: 1,
+        topic_name: "$topic.name",
+      },
+    },
+  ]);
+
+  
+  
+  {
+    task_name: 'Task 1',
+    topic_name: 'Introduction to Web Development'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Object-Oriented Programming Principles'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Data Structures and Algorithms'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Introduction to Database Management Systems'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Software Design Patterns'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Introduction to Version Control (e.g., Git)'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Introduction to Frontend Development (HTML, CSS, JavaScript)'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Backend Development with Node.js'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'RESTful API Design and Development'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Test-Driven Development (TDD)'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Secure Coding Practices'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Introduction to Cloud Computing (e.g., AWS, Azure)'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Microservices Architecture'
+  }
+  {
+    task_name: 'Task 1',
+    topic_name: 'Continuous Integration and Continuous Deployment (CI/CD)'
+  }
+  
+
+// 2. Find all the company drives which appeared between 15 oct-2020 and 31-oct-2020
+
+db.company_drives.find({
+  drive_date: {
+    $gte: ISODate("2020-10-15"),
+    $lte: ISODate("2020-10-31"),
+  },
+});
+
+
+{
+  _id: ObjectId('6683d64763575362009e2ddb'),
+  drive_id: 1,
+  drive_name: 'Company A',
+  drive_date: 2020-10-18T00:00:00.000Z
+}
+{
+  _id: ObjectId('6683d64763575362009e2ddc'),
+  drive_id: 2,
+  drive_name: 'Company B',
+  drive_date: 2020-10-25T00:00:00.000Z
+}
+{
+  _id: ObjectId('6683d64763575362009e2dde'),
+  drive_id: 4,
+  drive_name: 'Company D',
+  drive_date: 2020-10-30T00:00:00.000Z
+}
+
+
+// 3. Find all the company drives and students who are appeared for the placement.
+
+db.company_drives.aggregate([
+  {
+    $lookup: {
+      from: "users",
+      localField: "drive_id",
+      foreignField: "drive_id",
+      as: "students",
+    },
+  },
+]);
+
+
+{
+  _id: ObjectId('6683d64763575362009e2ddb'),
+  drive_id: 1,
+  drive_name: 'Company A',
+  drive_date: 2020-10-18T00:00:00.000Z,
+  students: []
+}
+{
+  _id: ObjectId('6683d64763575362009e2ddc'),
+  drive_id: 2,
+  drive_name: 'Company B',
+  drive_date: 2020-10-25T00:00:00.000Z,
+  students: []
+}
+{
+  _id: ObjectId('6683d64763575362009e2ddd'),
+  drive_id: 3,
+  drive_name: 'Company C',
+  drive_date: 2020-11-05T00:00:00.000Z,
+  students: []
+}
+{
+  _id: ObjectId('6683d64763575362009e2dde'),
+  drive_id: 4,
+  drive_name: 'Company D',
+  drive_date: 2020-10-30T00:00:00.000Z,
+  students: []
+}
+
+
+// 4. Find the number of problems solved by the user in codekata
+
+db.codekata.aggregate([
+  {
+    $match: { user_id: 2 },
+  },
+  {
+    $group: {
+      _id: "$user_id",
+      total_problems_solved: { $sum: 1 },
+    },
+  },
+]);
+
+
+// 5. Find all the mentors with who has the mentee's count more than 15
+
+db.mentors.find({ mentee_count: { $gt: 15 } });
+
+
+{
+  _id: ObjectId('6683d64763575362009e2ddf'),
+  mentor_id: 1,
+  mentor_name: 'Mentor X',
+  mentee_count: 20
+}
+{
+  _id: ObjectId('6683d64763575362009e2de2'),
+  mentor_id: 4,
+  mentor_name: 'Mentor W',
+  mentee_count: 25
+}
+
+
+// 6. Find the number of users who are absent and task is not submitted  between 15 oct-2020 and 31-oct-2020
+
+db.users.aggregate([
+  {
+    $lookup: {
+      from: "tasks",
+      localField: "user_id",
+      foreignField: "user_id",
+      as: "tasks",
+    },
+  },
+  {
+    $match: {
+      "tasks.deadline": {
+        $gte: ISODate("2020-10-15"),
+        $lte: ISODate("2020-10-31"),
+      },
+      attendance_status: "absent",
+      tasks: { $size: 0 },
+    },
+  },
+  {
+    $count: "absent_users_with_no_tasks",
+  },
+]);
+
+
+
+
+
+
